@@ -14,26 +14,24 @@ export default function SeparationAnxietyTracker() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    try {
-      const nameVal = localStorage.getItem('dog_name');
-      const sessionsVal = localStorage.getItem('completed_sessions');
-      const logsVal = localStorage.getItem('training_logs');
-      const weekVal = localStorage.getItem('current_week');
-      const reactVal = localStorage.getItem('reactivity_logs');
+    const load = (key) => { try { return localStorage.getItem(key); } catch { return null; } };
+    const parse = (val, fallback) => { try { return val ? JSON.parse(val) : fallback; } catch { return fallback; } };
 
-      if (nameVal) setDogName(nameVal);
-      if (sessionsVal) setCompletedSessions(JSON.parse(sessionsVal));
-      if (logsVal) setLogs(JSON.parse(logsVal));
-      if (weekVal) setCurrentWeek(parseInt(weekVal));
-      if (reactVal) setReactivityLogs(JSON.parse(reactVal));
-    } catch (e) {
-      console.error('Load error:', e);
-    }
+    setDogName(load('dog_name') || '');
+    setCompletedSessions(parse(load('completed_sessions'), {}));
+    setLogs(parse(load('training_logs'), []));
+    const week = load('current_week');
+    if (week) setCurrentWeek(parseInt(week));
+    setReactivityLogs(parse(load('reactivity_logs'), []));
     setLoading(false);
   }, []);
 
   const saveData = (key, value) => {
-    localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    try {
+      localStorage.setItem(key, typeof value === 'string' ? value : JSON.stringify(value));
+    } catch (e) {
+      console.error('Save error:', e);
+    }
   };
 
   const toggleSession = (weekNum, sessionIdx) => {
@@ -414,14 +412,10 @@ export default function SeparationAnxietyTracker() {
       <div className="max-w-5xl mx-auto px-6 py-10">
         {/* Header */}
         <header className="mb-10 border-b-2 border-[#2d2a26] pb-8">
-          <div className="flex items-center gap-3 ink-accent font-body text-xs uppercase tracking-[0.3em] mb-4">
-            <Dog className="w-4 h-4" />
-            <span>A Separation Anxiety Program</span>
+          <div className="flex items-center gap-3 ink-accent font-body mb-4">
+            <Dog className="w-6 h-6" />
+            <span className="font-display text-4xl md:text-5xl">A Separation Anxiety Program</span>
           </div>
-          <h1 className="font-display text-6xl md:text-7xl ink leading-[0.95] mb-4">
-            From Nairobi<br />
-            <em className="text-[#8b3a2a]">to a Greek wedding</em>
-          </h1>
           <p className="font-body ink-muted text-lg max-w-2xl leading-relaxed">
             An eighteen-week, evidence-based training plan tackling two linked problems at once: separation anxiety and barrier reactivity. Built on the DeMartini/Naismith sub-threshold method for SA and classical counter-conditioning for the doorbell, gardener, and delivery triggers that keep his nervous system wound.
           </p>
